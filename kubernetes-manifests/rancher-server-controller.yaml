@@ -1,0 +1,50 @@
+# Maintainer: tangfx <fxtang@qingyuanos.com>
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  annotations:
+    qingyuanos.io/catalog-by: '{"version": "v1alpha", "lib": "https://github.com/qingyuancloud/kube-harpoon", "repo": "https://github.com/rancher/rancher"}'
+  labels:
+    app: rancher-server
+    qingyuanos.io/harpoon: rancher-server
+    qingyuanos.io/heritage: qingyuancloud
+  name: rancher-server
+  # namespace: harpoon
+spec:
+  replicas: 1
+  selector:
+    qingyuanos.io/harpoon: rancher-server
+  template:
+    metadata:
+      labels:
+        app: rancher-server
+        qingyuanos.io/harpoon: rancher-server
+        qingyuanos.io/heritage: qingyuancloud
+    spec:
+      containers:
+      - image: tangfeixiong/rancher-server
+        imagePullPolicy: IfNotPresent
+        name: rancher-server
+        ports:
+        - containerPort: 8080
+          name: dashboard
+          protocol: TCP
+        - containerPort: 3306
+          name: mysql
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /var/lib/cattle
+          name: cattle-home
+        - mountPath: /var/lib/mysql
+          name: mysql-data
+        - mountPath: /var/log/mysql
+          name: mysql-log
+      volumes:
+      - emptyDir: {}
+        name: cattle-home
+      - hostPath:
+          path: /tmp/rancher/mysql-data
+        name: mysql-data
+      - hostPath:
+          path: /tmp/rancher/mysql-log
+        name: mysql-log
